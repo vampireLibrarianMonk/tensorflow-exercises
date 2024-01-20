@@ -97,4 +97,4 @@ def create_model():
 
 if __name__ == '__main__':
     model = create_model()
-    model.save("exercise_1_model.h5")
+    model.save("../models/exercise_1_model.h5")
