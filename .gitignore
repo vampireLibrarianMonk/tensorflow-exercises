@@ -1,2 +1,6 @@
 .idea
+exercises/LICENSE.txt
+exercises/train/*
+exercises/validation/*
 models/*
+*.zip

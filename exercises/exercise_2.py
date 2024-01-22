@@ -1,22 +1,41 @@
-# Comment: This is a more extensive write up of the much faster exercise_2_old in archive. It is mean to begin learning
+# Comment: This is a more extensive write-up of the much faster exercise_2_old in archive. It is mean to begin learning
 # the ins and outs of training and evaluating a tensorflow model workflow.
 
 # A standard Python module for generating random numbers.
-import random
+from random import randint
 
 # TensorFlow is an open-source machine learning library developed by Google. It's used for both research and production
 # at Google.
-import tensorflow as tf
-
-# A TensorFlow constant used for optimizing dataset operations.
-from tensorflow.data import AUTOTUNE
-
-# Importing specific modules from keras, which is now part of TensorFlow.
-# Callbacks are utilities called at certain points during model training. EarlyStopping stops training when a monitored
-# metric has stopped improving, and ModelCheckpoint saves the model after every epoch.
-from keras.callbacks import EarlyStopping, ModelCheckpoint
-# Sequential is a linear stack of layers.
+# * data: primarily used for data preprocessing and pipeline building. It offers tools for reading and writing data in
+#   various formats, transforming it, and making it ready for machine learning models. Efficient data handling is
+#   crucial in machine learning workflows, and TensorFlow's data module simplifies this process significantly.
+from tensorflow import data
+# * keras: originally an independent neural network library, now integrated into TensorFlow,
+#   simplifies the creation and training of deep learning models. Keras is known for its user-friendliness and modular
+#   approach, allowing for easy and fast prototyping. It provides high-level building blocks for developing deep
+#   learning models while still enabling users to dive into lower-level operations if needed.
+from tensorflow import keras
+# * tensorflow.python.client: Provides functionalities to query the properties of the hardware devices TensorFlow can
+#   access. Specifically, this module is often used to list and get detailed information about the system's available
+#   CPUs, GPUs, and other hardware accelerators compatible with TensorFlow.
+from tensorflow.python.client import device_lib
+# * keras.models: This module in Keras is essential for creating neural network models. It includes classes like
+#   Sequential and the Functional API for building models. The Sequential model is straightforward, allowing layers to
+#   be added in sequence, suitable for simple architectures. The Functional API, on the other hand, provides greater
+#   flexibility for creating complex models with advanced features like shared layers and multiple inputs/outputs.
+#   Both types enable comprehensive model management, including training, evaluation, and saving/loading
+#   functionalities, making them versatile for a wide range of deep learning applications.
 from keras.models import Sequential
+# * keras.callbacks: The keras.callbacks module offers a set of tools that can be applied during the training process of
+#   a model. These callbacks are used for various purposes like monitoring the model's performance in real-time, saving
+#   the model at certain intervals, early stopping when the performance plateaus, adjusting learning rates, and more.
+#   They are crucial for enhancing and controlling the training process, allowing for automated and optimized model
+#   training. Callbacks like ModelCheckpoint, EarlyStopping, TensorBoard, and ReduceLROnPlateau are commonly used for
+#   efficient model training and fine-tuning.
+from keras.callbacks import EarlyStopping, ModelCheckpoint
+
+# Versioning sourcing
+from tensorflow import __version__ as tf_version
 
 # This is a convenient module provided by Keras that contains various datasets used for machine learning tasks.
 # These datasets are preprocessed and ready to use, making them ideal for educational purposes, benchmarking, and quick
@@ -29,6 +48,36 @@ from keras import datasets, layers
 # memory usage while maintaining the model's accuracy. This is especially beneficial when training large models or
 # working with large datasets.
 from keras.mixed_precision import set_global_policy
+
+# Regular Expressions
+# 1. search: This function is used to perform a search for a pattern in a string and returns a match object if the
+# pattern is found, otherwise None. It's particularly useful for string pattern matching and extracting specific
+# segments from text.
+from re import search
+
+# Key aspects of 'check_output':
+# 1. **Process Execution**: The 'check_output' function is used to run a command in the subprocess/external process and
+#    capture its output. This is especially useful for running system commands and capturing their output directly
+#    within a Python script.
+# 2. **Return Output**: It returns the output of the command, making it available to the Python environment. If the
+#    called command results in an error (non-zero exit status), it raises a CalledProcessError.
+# 3. **Use Cases**: Common use cases include executing a shell command, reading the output of a command, automating
+#    scripts that interact with the command line, and integrating external tools into a Python workflow.
+# Example Usage:
+# Suppose you want to capture the output of the 'ls' command in a Unix/Linux system. You can use 'check_output' like
+# this:
+# output = check_output(['ls', '-l'])
+from subprocess import check_output
+# Key aspects of 'CalledProcessError':
+#  1. Error Handling: CalledProcessError is an exception raised by check_output when the command it tries to execute
+#   returns a non-zero exit status, indicating failure. This exception is particularly useful for error handling in
+#   scripts where the success of an external command is crucial.
+#  2. Exception Details: The exception object contains information about the error, including the return code, command
+#  executed, and output (if any). This aids in debugging by providing clear insights into why the external command
+#  failed.
+#  3. Handling the Exception: In practical use, it is often caught in a try-except block, allowing the script to respond
+#  appropriately to the failure of the external command, like logging the error or trying a fallback operation.
+from subprocess import CalledProcessError
 
 # Sets the global dtype policy to the specified policy. In your code, set_global_policy('mixed_float16') is used to set
 # the global policy to 'mixed_float16', which means that layers with compute dtype float16 and variable dtype float32
@@ -76,8 +125,8 @@ def create_model():
     # be converted to [0, 0, 1, 0, 0, 0, 0, 0, 0, 0] in a 10-dimensional space (since there are 10 categories).
 
     # Convert the labels to one-hot encoding
-    train_labels_one_hot = tf.keras.utils.to_categorical(train_labels, num_classes)
-    test_labels_one_hot = tf.keras.utils.to_categorical(test_labels, num_classes)
+    train_labels_one_hot = keras.utils.to_categorical(train_labels, num_classes)
+    test_labels_one_hot = keras.utils.to_categorical(test_labels, num_classes)
 
     # What is AUTOTUNE?
     # AUTOTUNE is a special value in TensorFlow's tf.data API. It's used to dynamically adjust the performance-related
@@ -105,29 +154,29 @@ def create_model():
 
     # Apply AUTOTUNE to dataset operations
     batch_size = 32
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels_one_hot))
+    train_dataset = data.Dataset.from_tensor_slices((train_images, train_labels_one_hot))
     train_dataset = (train_dataset.
-                     cache(). # This method caches the dataset in memory. Once the dataset is loaded into memory,
+                     cache().  # This method caches the dataset in memory. Once the dataset is loaded into memory,
                      # subsequent iterations over the data will be much faster.
-                     shuffle(len(train_images)). # This method randomly shuffles the elements of the dataset.
+                     shuffle(len(train_images)).  # This method randomly shuffles the elements of the dataset.
                      # The len(train_images) argument specifies the buffer size for shuffling.
-                     batch(batch_size). # This method combines consecutive elements of the dataset into batches.
+                     batch(batch_size).  # This method combines consecutive elements of the dataset into batches.
                      # Here, it's creating batches of 32 elements (images and labels).
-                     prefetch(AUTOTUNE)) # This is where AUTOTUNE is applied. Prefetching allows later elements of the
-    # dataset to be prepared while the current element is being processed. This can improve the efficiency of the
+                     prefetch(data.AUTOTUNE))  # This is where AUTOTUNE is applied. Prefetching allows later elements of
+    # the dataset to be prepared while the current element is being processed. This can improve the efficiency of the
     # pipeline. By setting it to AUTOTUNE, you're allowing TensorFlow to automatically manage the buffer size for
     # prefetching based on runtime conditions.
 
     # Apply AUTOTUNE to test dataset operations
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels_one_hot))
-    test_dataset = test_dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
+    test_dataset = data.Dataset.from_tensor_slices((test_images, test_labels_one_hot))
+    test_dataset = test_dataset.batch(batch_size).cache().prefetch(data.AUTOTUNE)
 
     # Example: printing one-hot encoded labels for the first training sample
     print("Original label: ", train_labels[0])
     print("One-Hot Encoded Label: ", train_labels_one_hot[0])
 
     # Get a random index
-    random_index = random.randint(0, len(train_images) - 1)
+    random_index = randint(0, len(train_images) - 1)
 
     # Get the random image and its label
     random_image = train_images[random_index]
@@ -146,7 +195,7 @@ def create_model():
     # Check the shape of the input data
     print(f"Print the train image shape {train_images.shape}")
     print(f"print the train labels shape {train_labels.shape}")
-    
+
     # Assuming the input shape is (height, width), for example, (28, 28) MNIST dataset
     # Tuple Unpacking: In Python, the asterisk (*) is used to unpack a tuple. This means that the elements of the tuple
     # are "taken out" and used individually.
@@ -171,11 +220,11 @@ def create_model():
 
         # First convolutional layer
         layers.Conv2D(
-            128, # Number of filters (or kernels). Each filter extracts different features from the input image.
-            3, # Kernel size (3x3). This size is a common choice for extracting features.
-            padding='same', # Padding means the output size is the same as the input size. This is achieved by adding
+            128,  # Number of filters (or kernels). Each filter extracts different features from the input image.
+            3,  # Kernel size (3x3). This size is a common choice for extracting features.
+            padding='same',  # Padding means the output size is the same as the input size. This is achieved by adding
             # padding to the input.
-            activation="relu" #  (Rectified Linear Unit) is a common activation function that introduces non-linearity
+            activation="relu"  # (Rectified Linear Unit) is a common activation function that introduces non-linearity
             # to the model, allowing it to learn more complex patterns.
         ),
 
@@ -220,10 +269,10 @@ def create_model():
         layers.Dropout(0.5),
 
         layers.Dense(
-            num_classes, # Number of neurons. This should be equal to the number of classes in the classification task.
-            activation="softmax", # "softmax" is used for multi-class classification. It outputs a probability
+            num_classes,  # Number of neurons. This should be equal to the number of classes in the classification task.
+            activation="softmax",  # "softmax" is used for multi-class classification. It outputs a probability
             # distribution over the classes.
-            dtype='float32' # 'float32'. This is explicitly set due to mixed precision training (combining float16 and
+            dtype='float32'  # 'float32'. This is explicitly set due to mixed precision training (combining float16 and
             # float32 for performance).
         )
     ])
@@ -237,7 +286,7 @@ def create_model():
         # predictions (the outputs of the softmax in your model) with the true distribution (the true labels of the data
         # ). In simpler terms, this function calculates the difference between the actual labels and the predicted
         # labels. The goal of training is to minimize this difference.
-        loss=tf.keras.losses.categorical_crossentropy,
+        loss=keras.losses.categorical_crossentropy,
         # Adam Optimizer: Adam is an optimization algorithm that can be used instead of the classical stochastic
         # gradient descent procedure to update network weights iteratively based on training data.
 
@@ -248,11 +297,11 @@ def create_model():
         # Adam optimizer combines the advantages of two other extensions of stochastic gradient descent, namely Adaptive
         # Gradient Algorithm (AdaGrad) and Root Mean Square Propagation (RMSProp). It's known for its efficiency and
         # effectiveness in practice, especially in situations with large datasets or parameters.
-        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=keras.optimizers.Adam(learning_rate=0.001),
 
-	    # 1. Accuracy
-	    # * Usage: Widely used in classification problems.
-	    #
+        # 1. Accuracy
+        # * Usage: Widely used in classification problems.
+        #
         # * Explanation: Accuracy is the most intuitive performance measure and it is simply a ratio of correctly
         # predicted observations to the total observations. It's a great measure when the target classes are well
         # balanced.
@@ -264,21 +313,21 @@ def create_model():
         # is imbalanced. For example, in a dataset with 95% of Class A and 5% of Class B, a model that always predicts
         # Class A will still have a high accuracy of 95%, despite not being useful.
 
-	    # 2. Mean Absolute Error (MAE)
-	    # * Usage: Commonly used in regression problems but can be adapted for classification.
-	    #
-        # * Explanation: MAE measures the average magnitude of the errors in a set of predictions, without considering their
-        # direction. It’s the average over the test sample of the absolute differences between prediction and actual
-        # observation where all individual differences have equal weight.
-	    #
+        # 2. Mean Absolute Error (MAE)
+        # * Usage: Commonly used in regression problems but can be adapted for classification.
+        #
+        # * Explanation: MAE measures the average magnitude of the errors in a set of predictions, without considering
+        # their direction. It’s the average over the test sample of the absolute differences between prediction and
+        # actual observation where all individual differences have equal weight.
+        #
         # * Formula: MAE = (1/n) * Σ|actual - forecast|, where n is the number of observations.
-	    #
-        # * Considerations: MAE is a linear score, which means all the individual differences are weighted equally in the
-        # average. For example, in a temperature forecasting model, an MAE of 2 degrees means the average prediction was
-        # within 2 degrees of the actual temperature. In classification, it can be used to indicate how far off the
+        #
+        # * Considerations: MAE is a linear score, which means all the individual differences are weighted equally in
+        # the average. For example, in a temperature forecasting model, an MAE of 2 degrees means the average prediction
+        # was within 2 degrees of the actual temperature. In classification, it can be used to indicate how far off the
         # predictions are on average, but it's less common and less intuitive than in regression.
         metrics=["accuracy", "mae"]
-        
+
         # Other Metrics to consider:
 
         # 1. Precision
@@ -348,8 +397,8 @@ def create_model():
         # 6. Root Mean Squared Error (RMSE)
         # * Usage: Also common in regression problems.
         #
-        # * Explanation: RMSE is the square root of the mean of the squared errors. It's a measure of how spread out these
-        # residuals are, i.e., it tells you how concentrated the data is around the line of best fit.
+        # * Explanation: RMSE is the square root of the mean of the squared errors. It's a measure of how spread out
+        # these residuals are, i.e., it tells you how concentrated the data is around the line of best fit.
         #
         # * Formula: RMSE = √[Σ(predicted - actual)² / n].
         #
@@ -361,8 +410,9 @@ def create_model():
         #
         # * Usage: Common in binary and multi-class classification problems.
         #
-        # * Explanation: Log loss measures the performance of a classification model where the prediction is a probability
-        # value between 0 and 1. Log loss increases as the predicted probability diverge from the actual label.
+        # * Explanation: Log loss measures the performance of a classification model where the prediction is a
+        # probability value between 0 and 1. Log loss increases as the predicted probability diverge from the actual
+        # label.
         #
         # * Consideration: Log Loss is sensitive to the predicted probabilities and is a strict measure, heavily
         # penalizing confident but wrong predictions. While it's a good measure for evaluating probabilistic outputs,
@@ -433,9 +483,9 @@ def create_model():
 
     # Create an EarlyStopping callback
     early_stopping = EarlyStopping(
-        # This parameter specifies the metric to be monitored. In this case, it's val_accuracy, which is the accuracy on
-        # the validation dataset. The callback will monitor the validation accuracy at the end of each epoch.
-        monitor='val_accuracy',
+        # This parameter specifies the metric to be monitored. In this case, it's accuracy, which is the accuracy on
+        # the validation dataset. The callback will monitor the accuracy at the end of each epoch.
+        monitor='accuracy',
         #  Patience is the number of epochs with no improvement after which training will be stopped. Setting patience=3
         #  means the training process will continue for 3 more epochs even after detecting a stop in improvement. This
         #  allowance is beneficial to rule out the possibilities of random fluctuations in training metrics.
@@ -518,9 +568,91 @@ def create_model():
 
     return model_2
 
+def print_gpu_info():
+    # Undocumented Method
+    # https://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow
+    # Get the list of all devices
+    devices = device_lib.list_local_devices()
+
+    for device in devices:
+        if device.device_type == 'GPU':
+            # Extract the physical device description
+            desc = device.physical_device_desc
+
+            # Use regular expressions to extract the required information
+            gpu_id_match = search(r'device: (\d+)', desc)
+            name_match = search(r'name: (.*?),', desc)
+            compute_capability_match = search(r'compute capability: (\d+\.\d+)', desc)
+
+            if gpu_id_match and name_match and compute_capability_match:
+                gpu_id = gpu_id_match.group(1)
+                gpu_name = name_match.group(1)
+                compute_capability = compute_capability_match.group(1)
+
+                # Convert memory limit from bytes to gigabytes and round it
+                memory_limit_gb = round(device.memory_limit / (1024 ** 2))
+
+                print(
+                    f"\tGPU ID {gpu_id} --> {gpu_name} --> "
+                    f"Memory Limit {memory_limit_gb} MB --> "
+                    f"Compute Capability {compute_capability}")
+
+
 # if-statement will execute only if the script is the main program being run.
 # This is a common practice in Python to structure scripts for both stand-alone use and importable functionality.
 if __name__ == '__main__':
+    print("Hardware Found:")
+    # GPU
+    print_gpu_info()
+
+    print("Software Versions:")
+
+    # CUDA
+    try:
+        # Execute the 'nvcc --version' command and decode the output
+        nvcc_output = check_output("nvcc --version", shell=True).decode()
+
+        # Use regular expression to find the version number
+        match = search(r"V(\d+\.\d+\.\d+)", nvcc_output)
+        if match:
+            cuda_version = match.group(1)
+            print("\tCUDA Version", cuda_version)
+        else:
+            print("\tCUDA Version not found")
+
+    except CalledProcessError as e:
+        print("Error executing nvcc --version:", e)
+
+    # NVIDIA Driver
+    try:
+        # Execute the nvidia-smi command and decode the output
+        nvidia_smi_output = check_output("nvidia-smi", shell=True).decode()
+
+        # Split the output into lines
+        lines = nvidia_smi_output.split('\n')
+
+        # Find the line containing the driver version
+        driver_line = next((line for line in lines if "Driver Version" in line), None)
+
+        # Extract the driver version number
+        if driver_line:
+            driver_version = driver_line.split('Driver Version: ')[1].split()[0]
+            print("\tNVIDIA Driver:", driver_version)
+
+            # Extract the maximum supported CUDA version
+            cuda_version = driver_line.split('CUDA Version: ')[1].strip().replace("|", "")
+            print("\tMaximum Supported CUDA Version:", cuda_version)
+        else:
+            print("\tNVIDIA Driver Version or CUDA Version not found.")
+
+    except Exception as e:
+        print("Error fetching NVIDIA Driver Version or CUDA Version:", e)
+
+    # TensorFlow
+    print("\tTensorFlow:", tf_version)
+
+    print("\n")
+
     # Create the model
     model = create_model()
 
