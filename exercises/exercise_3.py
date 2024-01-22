@@ -41,7 +41,7 @@ from keras import layers
 #   flexibility for creating complex models with advanced features like shared layers and multiple inputs/outputs.
 #   Both types enable comprehensive model management, including training, evaluation, and saving/loading
 #   functionalities, making them versatile for a wide range of deep learning applications.
-from keras.models import Sequential
+from keras import models
 # * keras.callbacks: The keras.callbacks module offers a set of tools that can be applied during the training process of
 #   a model. These callbacks are used for various purposes like monitoring the model's performance in real-time, saving
 #   the model at certain intervals, early stopping when the performance plateaus, adjusting learning rates, and more.
@@ -135,7 +135,7 @@ def preprocess(image, label, img_shape=30):
     return image, label
 
 
-def create():
+def create_model():
     """
     Create and train a convolutional neural network model on traffic sign images.
 
@@ -179,7 +179,7 @@ def create():
         preprocess, num_parallel_calls=data.experimental.AUTOTUNE)
 
     # Define the CNN model architecture
-    inline_model = Sequential([
+    inline_model = models.Sequential([
         # Input layer - specifies the shape of the input data (30x30 pixels with 3 color channels)
         layers.InputLayer(input_shape=(30, 30, 3)),
 
@@ -314,6 +314,7 @@ def create():
     # Return the trained model
     return inline_model
 
+
 def print_gpu_info():
     # Undocumented Method
     # https://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow
@@ -398,7 +399,7 @@ if __name__ == '__main__':
     print("\n")
 
     # Create the model
-    model = create()
+    model = create_model()
 
     # Save the model
-    model.save("../models/exercise_3.h5")
+    model.save("../models/exercise_2.h5")

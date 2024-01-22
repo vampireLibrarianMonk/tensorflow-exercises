@@ -568,6 +568,7 @@ def create_model():
 
     return model_2
 
+
 def print_gpu_info():
     # Undocumented Method
     # https://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow

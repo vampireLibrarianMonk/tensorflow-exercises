@@ -4,3 +4,4 @@ exercises/train/*
 exercises/validation/*
 models/*
 *.zip
+exercises/sarcasm.json
