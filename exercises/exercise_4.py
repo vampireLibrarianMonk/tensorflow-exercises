@@ -7,6 +7,9 @@ from json import load as json_load
 #   of neural networks and can be stacked to create complex architectures tailored to specific machine learning tasks.
 
 # Tensorflow Keras
+# * keras.layers: This component of Keras provides a wide array of layers for building neural networks, including
+#   convolutional layers, pooling layers, dense (fully connected) layers, and more. These layers are the building blocks
+#   of neural networks and can be stacked to create complex architectures tailored to specific machine learning tasks.
 from keras import layers
 # * keras.models: This module in Keras is essential for creating neural network models. It includes classes like
 #   Sequential and the Functional API for building models. The Sequential model is straightforward, allowing layers to
@@ -72,14 +75,11 @@ from urllib import request as url_request
 
 
 def create_model():
+    # Dataset reference
     url = 'https://storage.googleapis.com/download.tensorflow.org/data/sarcasm.json'
     url_request.urlretrieve(url, 'sarcasm.json')
 
-    vocab_size = 1000
-    embedding_dim = 10000
-    output_dim = 32
-    max_length = 120
-
+    # Load the json file and map each headline to whether or not it is sarcastic or not
     sentences = []
     labels = []
     with open('sarcasm.json', 'r') as file:
@@ -89,47 +89,182 @@ def create_model():
             sentences.append(item['headline'])
             labels.append(item['is_sarcastic'])
 
-    # Tokenization with specified configurations
+    # Set the maximum number of words to keep, based on word frequency. Only the most common `vocab_size` words will be
+    # kept.
+    vocab_size = 1000
+
+    # Initialize a Tokenizer object with a specified vocabulary size.
+    # `num_words=vocab_size` tells the tokenizer to only use the `vocab_size` most common words.
+    # `oov_token="<OOV>"` sets the token to be used for out-of-vocabulary words. Words not seen in the training data
+    # will be replaced with "<OOV>".
     tokenizer = Tokenizer(num_words=vocab_size, oov_token="<OOV>")
+
+    # Updates the internal vocabulary of the tokenizer based on the list of `sentences`.
+    # This method processes each sentence, tokenizes it, and updates the word index based on the words found in the
+    # sentence.
     tokenizer.fit_on_texts(sentences)
 
-    # Convert texts to sequences of integers
+    # Convert the list of sentences into sequences of integers. Each integer corresponds to a word's index in the
+    # tokenizer's word index.
+    # This transformation is based on the vocabulary established by the tokenizer during its fit on the training texts.
     sequences = tokenizer.texts_to_sequences(sentences)
 
-    # Padding
+    # Set the dimensionality of the embedding layer. This number represents the size of the vector space in which words
+    # will be embedded.
+    # It defines how many factors or dimensions will be used to represent each word in this space.
+    embedding_dim = 10000
+
+    # Set the maximum length of sequences. If a sequence is shorter than this length, it will be padded with zeros.
+    # If it's longer, it will be truncated to this length. This ensures that all sequences have the same length.
+    max_length = 120
+
+    # Define the type of padding to use when sequences are shorter than `max_length`.
+    # 'post' means that if a sequence needs padding, zeros will be added to the end of the sequence.
     padding_type = 'post'
+
+    # Pad the sequences to ensure they all have the same length. This is necessary because most deep learning models
+    # require inputs to be of the same size. The `pad_sequences` function achieves this by padding shorter sequences
+    # (with zeros, by default) or truncating longer ones to the `max_length` specified.
     X = pad_sequences(sequences, maxlen=max_length, padding=padding_type)
 
-    # Convert labels to a numpy array
+    # Convert the list of labels into a NumPy array for efficient computation and compatibility with various machine
+    # learning libraries.
+    # This is particularly useful because NumPy arrays offer a wide range of mathematical operations and are optimized
+    # for performance.
     labels = np_array(labels)
 
-    # Split the data with a training size of 20000
+    # Define the size of the training dataset. In this case, the first 20,000 examples will be used for training.
     training_size = 20000
-    X_train, X_test = X[:training_size], X[training_size:]
-    y_train, y_test = labels[:training_size], labels[training_size:]
 
-    # Model definition
+    # Split the feature data into training and testing sets.
+    # `X_train` will contain the first `training_size` examples, and `X_test` will contain the remaining examples.
+    # This is done by slicing the array `X` using the `training_size` variable.
+    train_data, test_data = X[:training_size], X[training_size:]
+
+    # Similarly, split the label data (`labels`) into training and testing sets.
+    # train_labels will contain the labels corresponding to the training data, and test_labels will contain the labels
+    # for the testing data.
+    # The labels are split in the same manner as the feature data, ensuring corresponding features and labels are
+    # matched in both training and testing sets.
+    train_labels, test_labels = labels[:training_size], labels[training_size:]
+
+    # Set the dimensionality of the output space for the Embedding layer. This value determines the size of the
+    # embedding vectors.
+    output_dim = 32
+
+    # Define the neural network model as a sequential model, which means that each layer has exactly one input tensor
+    # and one output tensor.
     model = models.Sequential([
-        layers.Embedding(input_dim=embedding_dim, output_dim=output_dim, input_length=max_length),
+        # The Embedding layer transforms integer-encoded vocabulary into dense vector embeddings.
+        # * `input_dim` is the size of the vocabulary, which should be `vocab_size + 1` because index 0 is reserved for
+        # padding.
+        # * `output_dim` is the dimension of the dense embedding.
+        # * `input_length` is the length of input sequences.
+        layers.Embedding(input_dim=vocab_size + 1, output_dim=embedding_dim, input_length=max_length),
+
+        # Dropout layer randomly sets input units to 0 with a frequency of 0.2 at each step during training, which helps
+        # prevent overfitting.
         layers.Dropout(0.2),
-        layers.Conv1D(32, 5, activation='relu'),  # New Conv1D layer
+
+        # Conv1D layer for convolution over the 1D sequence. It uses 32 filters and a kernel size of 5.
+        # The activation function 'relu' introduces non-linearity to the learning process, allowing the model to learn
+        # more complex patterns.
+        layers.Conv1D(32, 5, activation='relu'),
+
+        # MaxPooling1D layer reduces the dimensionality of the input by taking the maximum value over a window (of size
+        # 4 here) for each dimension along the features' axis.
         layers.MaxPooling1D(pool_size=4),
-        layers.Bidirectional(layers.LSTM(64, return_sequences=True)),  # New Bi-directional LSTM layer
+
+        # Bidirectional LSTM layer processes the sequence both forwards and backwards (bidirectionally) with 64 units.
+        # `return_sequences=True` makes the layer return the full sequence of outputs for each input, necessary for
+        # stacking with other sequence-processing layers.
+        layers.Bidirectional(layers.LSTM(64, return_sequences=True)),
+
+        # GlobalAveragePooling1D layer computes the average of the input's dimensions, reducing its dimensionality and
+        # preparing it for the dense layer.
         layers.GlobalAveragePooling1D(),
-        layers.Dense(128, activation='relu'),  # Increased number of neurons
-        layers.Dropout(0.5),  # Increased dropout rate
+
+        # Dense layer with 128 neurons and 'relu' activation function, introducing another level of non-linearity and
+        # allowing the network to learn more complex representations.
+        layers.Dense(128, activation='relu'),
+
+        # Another Dropout layer, this time with a higher dropout rate of 0.5, to further mitigate the risk of
+        # overfitting, especially given the larger number of neurons in the preceding Dense layer.
+        layers.Dropout(0.5),
+
+        # Final Dense output layer with a single neuron, using the 'sigmoid' activation function to output a value
+        # between 0 and 1,
+        # which can be interpreted as the probability of the input being in a particular class (e.g., sarcastic or not
+        # sarcastic in this context).
         layers.Dense(1, activation='sigmoid')
     ])
 
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    # Compile the model by specifying the optimizer, loss function, and metrics to monitor.
+    # * 'adam' optimizer is a popular choice for many types of neural networks due to its adaptive learning rate
+    # capabilities.
+    # * 'binary_crossentropy' is suitable for binary classification problems. It measures the performance of a
+    # classification model whose output is a probability value between 0 and 1.
+    # * 'metrics=['accuracy']': explained inline with other possibilities
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=[
+            # 'accuracy': Computes the accuracy rate across all predictions for classification problems.
+            # It's the number of correct predictions divided by the total number of predictions.
+            'accuracy',
 
-    # Fit the model
+            # 'precision': Measures the proportion of true positive predictions in the positive predictions made by the
+            # model.
+            # It is particularly useful when the cost of a false positive is high.
+            # 'precision' = True Positives / (True Positives + False Positives)
+
+            # 'recall': Measures the proportion of true positive predictions in the actual positive labels.
+            # It is important when the cost of a false negative is high.
+            # 'recall' = True Positives / (True Positives + False Negatives)
+
+            # 'f1-score': Harmonic mean of precision and recall. It's a better measure than accuracy for imbalanced
+            # classes.
+            # 'f1-score' = 2 * (precision * recall) / (precision + recall)
+
+            # 'auc': Area Under the ROC Curve. AUC provides an aggregate measure of performance across all
+            # classification thresholds.
+            # One way of interpreting AUC is as the probability that the model ranks a random positive example more
+            # highly than a random negative example.
+
+            # 'mean_squared_error' or 'mse': Measures the average of the squares of the errors between actual and
+            # predicted values.
+            # It is used for regression problems.
+
+            # 'mean_absolute_error' or 'mae': Measures the average of the absolute differences between actual and
+            # predicted values.
+            # It provides a linear score without direction, meaning the lower the better, regardless of under or
+            # over forecasting.
+
+            # 'mean_absolute_percentage_error' or 'mape': Measures the average of the absolute percentage errors by
+            # comparing the prediction with the actual value.
+            # This can be more interpretable in terms of percentage, but can be skewed by small denominators.
+        ]
+    )
+
+    # Set the number of epochs, which is the number of complete passes through the training dataset.
     epochs = 10
+    # Set the batch size, which is the number of training examples utilized in one iteration.
     batch_size = 32
-    model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_data=(X_test, y_test))
 
-    # Evaluate the model
-    loss, accuracy = model.evaluate(X_test, y_test)
+    # Fit the model to the training data.
+    # * 'train_data' and 'train_labels' are the features and labels for the training dataset, respectively.
+    # * 'epochs=epochs' specifies how many times the learning algorithm will work through the entire training dataset.
+    # * 'batch_size=batch_size' determines the number of samples per gradient update for training.
+    # * 'validation_data=(test_data, test_labels)' provides the validation dataset that the model will evaluate its
+    # performance on at the end of each epoch.
+    model.fit(train_data, train_labels, epochs=epochs, batch_size=batch_size, validation_data=(test_data, test_labels))
+
+    # Evaluate the model's performance on the test dataset, which it has not seen during training.
+    # This function returns the loss value and metrics (accuracy in this case) for the model in test mode.
+    loss, accuracy = model.evaluate(test_data, test_labels)
+
+    # Print the test accuracy, multiplying by 100 to convert from a proportion to a percentage.
+    # The formatted string uses {:.2f} to round the accuracy to two decimal places.
     print(f"Test Accuracy: {accuracy * 100:.2f}%")
 
     return model
@@ -165,6 +300,8 @@ def print_gpu_info():
                     f"Compute Capability {compute_capability}")
 
 
+# if-statement will execute only if the script is the main program being run.
+# This is a common practice in Python to structure scripts for both stand-alone use and importable functionality.
 if __name__ == '__main__':
     print("Hardware Found:")
     # GPU
@@ -219,9 +356,7 @@ if __name__ == '__main__':
     print("\n")
 
     # Create the model
-    model = create_model()
+    created_model = create_model()
 
     # Save the model
-    model.save("../models/exercise_2.h5")
-
-
+    created_model.save("../models/exercise_2.h5")

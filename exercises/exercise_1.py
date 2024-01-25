@@ -166,6 +166,8 @@ def print_gpu_info():
                     f"Compute Capability {compute_capability}")
 
 
+# if-statement will execute only if the script is the main program being run.
+# This is a common practice in Python to structure scripts for both stand-alone use and importable functionality.
 if __name__ == '__main__':
     print("Hardware Found:")
     # GPU
