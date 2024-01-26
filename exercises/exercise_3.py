@@ -1,7 +1,5 @@
-# Sources:
-# * https://medium.com/@lawrence.may/using-tensorflow-for-classification-on-the-gtsrb-german-traffic-sign-dataset-d71e5557a015
-# * https://www.kaggle.com/code/bhavinmoriya/intro-to-tensorflow-german-traffic-sign-recog
-# * https://towardsdatascience.com/my-tryst-with-deep-learning-german-traffic-data-set-with-keras-87970dfb18b7
+# German Traffic Sign Recognition Benchmark GTSRB
+# https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html
 
 # TensorFlow is an open-source machine learning library developed by Google. It's used for both research and production
 # at Google.
