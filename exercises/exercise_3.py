@@ -1,34 +1,6 @@
 # German Traffic Sign Recognition Benchmark GTSRB
 # https://sid.erda.dk/public/archives/daaeac0d7ce1152aea9b61d9f1e19370/published-archive.html
 
-# TensorFlow is an open-source machine learning library developed by Google. It's used for both research and production
-# at Google.
-# * cast: This function is used to change the data type of tensor. For example, it can convert a tensor from one type
-#   (like int32) to another (like float32). This is particularly useful in scenarios where you need to ensure
-#   consistency in data types for computational operations in TensorFlow.
-from tensorflow import cast
-# * data: Is primarily used for data preprocessing and pipeline building. It offers tools for
-#   reading and writing data in various formats, transforming it, and making it ready for machine learning models.
-#   Efficient data handling is crucial in machine learning workflows, and TensorFlow's data module simplifies this
-#   process significantly.
-from tensorflow import data
-# * float32: A data type in TensorFlow, representing a 32-bit floating-point number. It's widely used in machine
-#   learning as it provides a good balance between precision and computational efficiency. float32 is often the default
-#   data type for TensorFlow's neural network weights and other floating-point computations.
-from tensorflow import float32
-# * keras, originally an independent neural network library, now integrated into TensorFlow, simplifies the creation and
-#   training of deep learning models. Keras is known for its user-friendliness and modular approach, allowing for easy
-#   and fast prototyping. It provides high-level building blocks for developing deep learning models while still
-#   enabling users to dive into lower-level operations if needed.
-from tensorflow import keras
-# * tensorflow.python.client: Provides functionalities to query the properties of the hardware devices TensorFlow can
-#   access. Specifically, this module is often used to list and get detailed information about the system's available
-#   CPUs, GPUs, and other hardware accelerators compatible with TensorFlow.
-from tensorflow.python.client import device_lib
-# * image: This module in TensorFlow contains various functions and utilities for image processing. It includes tools
-#   for tasks like image resizing, color adjustment, and image augmentation - operations that are crucial in many
-#   computer vision applications. The image module helps in preparing image data to be fed into machine learning models.
-from tensorflow import image as tensor_image
 # * keras.layers: This component of Keras provides a wide array of layers for building neural networks, including
 #   convolutional layers, pooling layers, dense (fully connected) layers, and more. These layers are the building blocks
 #   of neural networks and can be stacked to create complex architectures tailored to specific machine learning tasks.
@@ -47,17 +19,6 @@ from keras import models
 #   training. Callbacks like ModelCheckpoint, EarlyStopping, TensorBoard, and ReduceLROnPlateau are commonly used for
 #   efficient model training and fine-tuning.
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-
-# Versioning sourcing
-from tensorflow import __version__ as tf_version
-
-# Is used for opening and reading URLs, primarily used for fetching data across the web. It allows you to send HTTP and
-# other requests, access web pages, download data, and interact with APIs.
-from urllib import request
-
-# Provides tools for creating new ZIP archives, extracting files from existing archives, adding files to existing
-# archives, and more.
-from zipfile import ZipFile
 
 # Regular Expressions
 # 1. search: This function is used to perform a search for a pattern in a string and returns a match object if the
@@ -88,6 +49,45 @@ from subprocess import check_output
 #  3. Handling the Exception: In practical use, it is often caught in a try-except block, allowing the script to respond
 #  appropriately to the failure of the external command, like logging the error or trying a fallback operation.
 from subprocess import CalledProcessError
+
+# TensorFlow is an open-source machine learning library developed by Google. It's used for both research and production
+# at Google.
+# * cast: This function is used to change the data type of tensor. For example, it can convert a tensor from one type
+#   (like int32) to another (like float32). This is particularly useful in scenarios where you need to ensure
+#   consistency in data types for computational operations in TensorFlow.
+from tensorflow import cast
+# * data: Is primarily used for data preprocessing and pipeline building. It offers tools for
+#   reading and writing data in various formats, transforming it, and making it ready for machine learning models.
+#   Efficient data handling is crucial in machine learning workflows, and TensorFlow's data module simplifies this
+#   process significantly.
+from tensorflow import data
+# * float32: A data type in TensorFlow, representing a 32-bit floating-point number. It's widely used in machine
+#   learning as it provides a good balance between precision and computational efficiency. float32 is often the default
+#   data type for TensorFlow's neural network weights and other floating-point computations.
+from tensorflow import float32
+# * keras, originally an independent neural network library, now integrated into TensorFlow, simplifies the creation and
+#   training of deep learning models. Keras is known for its user-friendliness and modular approach, allowing for easy
+#   and fast prototyping. It provides high-level building blocks for developing deep learning models while still
+#   enabling users to dive into lower-level operations if needed.
+from tensorflow import keras
+# * tensorflow.python.client: Provides functionalities to query the properties of the hardware devices TensorFlow can
+#   access. Specifically, this module is often used to list and get detailed information about the system's available
+#   CPUs, GPUs, and other hardware accelerators compatible with TensorFlow.
+from tensorflow.python.client import device_lib
+# * image: This module in TensorFlow contains various functions and utilities for image processing. It includes tools
+#   for tasks like image resizing, color adjustment, and image augmentation - operations that are crucial in many
+#   computer vision applications. The image module helps in preparing image data to be fed into machine learning models.
+from tensorflow import image as tensor_image
+# Versioning sourcing
+from tensorflow import __version__ as tf_version
+
+# Is used for opening and reading URLs, primarily used for fetching data across the web. It allows you to send HTTP and
+# other requests, access web pages, download data, and interact with APIs.
+from urllib import request
+
+# Provides tools for creating new ZIP archives, extracting files from existing archives, adding files to existing
+# archives, and more.
+from zipfile import ZipFile
 
 
 def download_and_extract_data():
@@ -312,6 +312,14 @@ def create_model():
     # Return the trained model
     return inline_model
 
+
+# This function `print_gpu_info` is designed to display detailed information about the available GPUs on the system.
+# It utilizes TensorFlow's `device_lib.list_local_devices()` method to enumerate all computing devices recognized by
+# TensorFlow. For each device identified as a GPU, the function extracts and prints relevant details including the GPU's
+# ID, name, memory limit (converted to megabytes), and compute capability. The extraction of GPU information involves
+# parsing the device's description string using regular expressions to find specific pieces of information. This
+# function can be particularly useful for debugging or for setting up configurations in environments with multiple GPUs,
+# ensuring that TensorFlow is utilizing the GPUs as expected.
 
 def print_gpu_info():
     # Undocumented Method

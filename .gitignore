@@ -2,6 +2,7 @@
 exercises/LICENSE.txt
 exercises/train/*
 exercises/validation/*
+*.h5
 models/*
 *.zip
 exercises/sarcasm.json

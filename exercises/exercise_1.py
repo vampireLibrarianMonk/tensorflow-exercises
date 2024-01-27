@@ -136,6 +136,14 @@ def create_model():
     return model_1  # Returning the trained model
 
 
+# This function `print_gpu_info` is designed to display detailed information about the available GPUs on the system.
+# It utilizes TensorFlow's `device_lib.list_local_devices()` method to enumerate all computing devices recognized by
+# TensorFlow. For each device identified as a GPU, the function extracts and prints relevant details including the GPU's
+# ID, name, memory limit (converted to megabytes), and compute capability. The extraction of GPU information involves
+# parsing the device's description string using regular expressions to find specific pieces of information. This
+# function can be particularly useful for debugging or for setting up configurations in environments with multiple GPUs,
+# ensuring that TensorFlow is utilizing the GPUs as expected.
+
 def print_gpu_info():
     # Undocumented Method
     # https://stackoverflow.com/questions/38559755/how-to-get-current-available-gpus-in-tensorflow

@@ -34,11 +34,12 @@ from tensorflow.python.client import device_lib
 
 # Versioning sourcing
 from tensorflow import __version__ as tf_version
-# * is used to import the array function from the NumPy library, but it renames it as np_array for use within the code.
-# This function is crucial in NumPy for creating array objects, which are central to the library's operations. These
-# arrays are multi-dimensional, efficient, and provide the foundation for a wide range of scientific computing and data
-# manipulation tasks in Python. Renaming it to np_array can help avoid naming conflicts or simply provide a shorthand
-# that's more convenient for the coder's preferences.
+
+# * numpy.array is used to import the array function from the NumPy library, but it renames it as np_array for use
+# within the code. This function is crucial in NumPy for creating array objects, which are central to the library's
+# operations. These arrays are multi-dimensional, efficient, and provide the foundation for a wide range of scientific
+# computing and data manipulation tasks in Python. Renaming it to np_array can help avoid naming conflicts or simply
+# provide a shorthand that's more convenient for the coder's preferences.
 from numpy import array as np_array
 
 # Regular Expressions
@@ -269,6 +270,14 @@ def create_model():
 
     return model
 
+
+# This function `print_gpu_info` is designed to display detailed information about the available GPUs on the system.
+# It utilizes TensorFlow's `device_lib.list_local_devices()` method to enumerate all computing devices recognized by
+# TensorFlow. For each device identified as a GPU, the function extracts and prints relevant details including the GPU's
+# ID, name, memory limit (converted to megabytes), and compute capability. The extraction of GPU information involves
+# parsing the device's description string using regular expressions to find specific pieces of information. This
+# function can be particularly useful for debugging or for setting up configurations in environments with multiple GPUs,
+# ensuring that TensorFlow is utilizing the GPUs as expected.
 
 def print_gpu_info():
     # Undocumented Method
