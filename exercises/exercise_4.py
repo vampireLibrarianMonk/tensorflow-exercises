@@ -368,4 +368,4 @@ if __name__ == '__main__':
     created_model = create_model()
 
     # Save the model
-    created_model.save("../models/exercise_2.h5")
+    created_model.save("../models/exercise_4.h5")
