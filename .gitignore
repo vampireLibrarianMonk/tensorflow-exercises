@@ -6,3 +6,6 @@ exercises/validation/*
 models/*
 *.zip
 exercises/sarcasm.json
+
+# Notebooks
+.ipynb_checkpoints
