@@ -220,7 +220,7 @@ def create_model():
 
         # First convolutional layer
         layers.Conv2D(
-            128,  # Number of filters (or kernels). Each filter extracts different features from the input image.
+            32,  # Number of filters (or kernels). Each filter extracts different features from the input image.
             3,  # Kernel size (3x3). This size is a common choice for extracting features.
             padding='same',  # Padding means the output size is the same as the input size. This is achieved by adding
             # padding to the input.
@@ -228,45 +228,24 @@ def create_model():
             # to the model, allowing it to learn more complex patterns.
         ),
 
-        # See BatchNormalization comment above.
-        layers.BatchNormalization(),
-
-        # Pool Size: (2, 2) reduces the spatial dimensions (height and width) of the output from the previous layer.
         # It helps in reducing the computational load and overfitting.
-        layers.MaxPool2D(pool_size=(2, 2)),
-        layers.Dropout(0.25),
-
-        # See first comment for first convolutional layer
-        layers.Conv2D(64, 3, padding='same', activation="relu"),
-
-        # See BatchNormalization comment above.
-        layers.BatchNormalization(),
-
-        # Pool Size: (2, 2) reduces the spatial dimensions (height and width) of the output from the previous layer.
-        # It helps in reducing the computational load and overfitting.
-        layers.MaxPool2D(pool_size=(2, 2)),
-        layers.Dropout(0.25),
+        layers.MaxPool2D(),
 
         # See first comment for first convolutional layer
         layers.Conv2D(32, 3, padding='same', activation="relu"),
 
-        # See BatchNormalization comment above.
-        layers.BatchNormalization(),
-
-        # Pool Size: (2, 2) reduces the spatial dimensions (height and width) of the output from the previous layer.
         # It helps in reducing the computational load and overfitting.
-        layers.MaxPool2D(pool_size=(2, 2)),
+        layers.MaxPool2D(),
 
-        # 25% of the input units are randomly set to zero. This helps in preventing overfitting by ensuring that the
-        # network does not rely on any specific feature too heavily.
-        layers.Dropout(0.25),
+        # See first comment for first convolutional layer
+        layers.Conv2D(32, 3, padding='same', activation="relu"),
+
+        # It helps in reducing the computational load and overfitting.
+        layers.MaxPool2D(),
 
         # Converts the 2D output of the previous layers into a 1D array. This is necessary because the next dense layer
         # expects a 1D input.
         layers.Flatten(),
-
-        # Increases the dropout rate to 50% before the final classification layer, again to prevent overfitting.
-        layers.Dropout(0.5),
 
         layers.Dense(
             num_classes,  # Number of neurons. This should be equal to the number of classes in the classification task.
@@ -550,7 +529,7 @@ def create_model():
         train_dataset,
         # The model will go through the entire training dataset 30 times. Each pass through the entire dataset is called
         # an epoch.
-        epochs=30,
+        epochs=15,
         # The test dataset is used as validation data. This means at the end of each epoch, the model's performance is
         # evaluated on this validation dataset.
         validation_data=test_dataset,
@@ -567,6 +546,7 @@ def create_model():
     print(f"Mean Absolute Error: {mae}")
 
     return model_2
+
 
 # This function `print_gpu_info` is designed to display detailed information about the available GPUs on the system.
 # It utilizes TensorFlow's `device_lib.list_local_devices()` method to enumerate all computing devices recognized by
@@ -666,3 +646,17 @@ if __name__ == '__main__':
 
     # Save the model
     model.save("../models/exercise_2.h5")
+
+    from tensorflow import lite
+
+    # Convert the model to the TensorFlow Lite format with quantization
+    converter = lite.TFLiteConverter.from_keras_model(model)
+    # converter.optimizations = [lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [lite.OpsSet.TFLITE_BUILTINS, lite.OpsSet.SELECT_TF_OPS]
+
+    # Generate a quantized model
+    tflite_model = converter.convert()
+
+    # Save the quantized model to a file
+    with open("../models/exercise_2.tflite", 'wb') as f:
+        f.write(tflite_model)

@@ -3,6 +3,7 @@ exercises/LICENSE.txt
 exercises/train/*
 exercises/validation/*
 *.h5
+*.tflite
 models/*
 *.zip
 exercises/sarcasm.json
