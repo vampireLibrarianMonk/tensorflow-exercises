@@ -10,3 +10,11 @@ exercises/sarcasm.json
 
 # Notebooks
 .ipynb_checkpoints
+
+# Images
+*.png
+*.jpeg
+*.jpg
+
+# Licenses
+LICENSE.txt
