@@ -1,12 +1,16 @@
 .idea
-exercises/LICENSE.txt
 exercises/train/*
 exercises/validation/*
 *.h5
 *.tflite
 models/*
 *.zip
+*.tar
+*.tar.gz
 exercises/sarcasm.json
+
+# Exercise 4
+notebooks/exercise_4/sarcasm.json
 
 # Notebooks
 .ipynb_checkpoints
