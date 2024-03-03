@@ -1,9 +1,10 @@
-name: tensorflow-exercise-0
+name: tensorflow-exercise-2
 channels:
   - conda-forge
 dependencies:
   - pip
   - python=3.10.0
   - pip:
+      - matplotlib
       - notebook
       - tensorflow[and-cuda]

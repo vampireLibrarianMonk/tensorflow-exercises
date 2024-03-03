@@ -1,4 +1,4 @@
-name: tensorflow-exercise-0
+name: tensorflow-exercise-1
 channels:
   - conda-forge
 dependencies:
